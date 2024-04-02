@@ -1,113 +1,161 @@
+import { generateToken } from "./jwt.js";
 import { userModel, dataModel } from "./mongoose.js";
-
-let home, signUp, signIn, create, read, update, dlt;
-
-
+import bcrypt from 'bcryptjs'
 // ------ Home -----
 
-home = async (req, res) => {
+const home = async (req, res) => {
   res.send('Welcome');
 };
 
 
 // ------ Sign Up In -----
 
-signUp = async (req, res) => {
-  try {    
+const signUp = async (req, res) => {
+  try {
     const { name, email, password } = req.body;
-  
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
     const findUser = await userModel.findOne({ email: email });
-  
-    if(findUser === null) {
-      userModel.insertMany({
-        name: name,
-        email: email,
-        password: password
-      });
-    
-      res.send("User Successfully Signed Up");
-    } else {
-      res.send("User Already Exist");
-    };
+
+    if (findUser) {
+      return res.status(401).send("User Already Exist");
+    }
+
+    const addUser = new userModel({ name, email, password: hashPassword })
+
+    await addUser.save();
+
+    return res.status(201).json({ message: "user created succeddfully", addUser })
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   };
 };
 
-signIn = async (req, res) => {
-  try {    
+const signIn = async (req, res) => {
+  try {
     const { email, password } = req.body;
-  
-    const findUser = await userModel.findOne({ email: email }, { __v: 0 });
-  
-    if(findUser === null){
-      res.send("User not signed up");
-    } else {
-      if(password === findUser.password) {
-        res.send(findUser);
-      } else {
-        res.send("Invalid Password");
-      };
-    };
+
+    const findUser = await userModel.findOne({ email: email });
+
+    if (!findUser) {
+      res.send("User not Found")
+    }
+
+    const match = await bcrypt.compare(password, findUser.password);
+
+    if (!match) {
+      return res.status(401).send("password incorrect")
+    }
+
+    const payLoad = {
+      id: findUser._id,
+      name: findUser.name,
+    }
+
+    const token = await generateToken(payLoad);
+
+    return res.status(201).json({ message: "user loggedIn successfully ", token })
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   };
 };
 
 
 // ------ CRUD -----
 
-create = async (req, res) => {
+const create = async (req, res) => {
   try {
-    const { userId, title, description } = req.body;
+    const {title, description } = req.body;
 
-    await dataModel.insertMany({ userId, title, description });
-    
+    const user = req.user;
+
+    //---------findUser -------------
+
+    const findUser = await userModel.findOne({ _id: user.id });
+
+    if(!findUser){
+     return  res.status(401).send("user not found") 
+    }
+
+    // ----------- save the data -----------
+
+    await dataModel.insertMany({ userId : user.id, title, description });
+
     res.send('Data Successfully Added');
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   };
 };
 
-read = async (req, res) => {
+const read = async (req, res) => {
   try {
-    const { userId } = req.body;
 
-    const data = await dataModel.find({ userId });
+    const user = req.user;
 
-    res.send(data);
+    //---------findUser -------------
+
+    const findUser = await userModel.findOne({ _id: user.id });
+
+    if(!findUser){
+      return res.status(401).send("user not found")
+    }
+
+    const data = await dataModel.find({ userId : findUser });
+
+    return res.status(201).json( data )
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   };
 };
 
-update = async (req, res) => {
+const update = async (req, res) => {
   try {
     const { dataId, title, description } = req.body;
 
+    const user = req.user;
+
+    //--------- findUser -------------
+
+    const findUser = await userModel.findOne({ _id: user.id });
+
+    if(!findUser){
+     return res.status(401).send("user not found") 
+    }
+
     await dataModel.updateOne({ _id: dataId }, { title, description });
 
-    res.send('Data Successfully Updated');
+   return res.status(201).send('Data Successfully Updated');
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   };
 };
 
-dlt = async(req, res) => {
+const dlt = async (req, res) => {
   try {
     const { dataId } = req.body;
 
+    const user = req.user;
+
+    //--------- findUser -------------
+
+    const findUser = await userModel.findOne({ _id: user.id });
+
+    if(!findUser){
+     return res.status(401).send("user not found") 
+    }
+
     await dataModel.deleteOne({ _id: dataId });
 
-    res.send('Data Successfully Deleted');
+    return res.status(201).send('Data Successfully Deleted');
+
   } catch (err) {
-    console.log('err : ', err);
-    res.send(err);
+    return res.status(501).send("Internal server error")
   }
 };
 

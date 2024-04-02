@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv'
 
 let db, userSchema, userModel, dataSchema, dataModel;
 
-mongoose.connect("mongodb://127.0.0.1:27017/avi");
+dotenv.config();
+
+mongoose.connect(process.env.MONGO_URL);
 
 db = mongoose.connection;
 
@@ -25,8 +28,6 @@ dataSchema = new mongoose.Schema({
   title: String,
   description: String,
 });
-
-
 
 userModel = mongoose.model("user", userSchema);
 dataModel = mongoose.model("data", dataSchema);

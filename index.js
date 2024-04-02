@@ -1,20 +1,15 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import { home, signUp, signIn, create, read, update, dlt } from "./route.js";
+import { jwtAuthVerify } from "./jwt.js";
 
-
-let app, hostName, port;
-
-app = express();
-
-hostName = "127.0.0.1";
-port = 4000;
+const app = express();
 
 app.use(cors());
+dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
 
 app.get("/", home);
 
@@ -24,14 +19,13 @@ app.post("/sign-up", signUp);
 app.post("/sign-in", signIn);
 
 // ------ CRUD -----
-app.post("/create", create);
-app.get("/read", read);
-app.put("/update", update);
-app.delete("/delete", dlt)
+app.post("/create",jwtAuthVerify ,  create);
+app.get("/read",jwtAuthVerify, read);
+app.post("/update",jwtAuthVerify, update);
+app.post("/delete",jwtAuthVerify, dlt)
 
 
-
-
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server is listening on port ${process.env.PORT}`);
 });
+
