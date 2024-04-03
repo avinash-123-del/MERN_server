@@ -40,13 +40,14 @@ const signIn = async (req, res) => {
     const findUser = await userModel.findOne({ email: email });
 
     if (!findUser) {
-      return res.status(401).send("user not found");
+      return res.status(400).json({message  : "user not found" , status : 0})
     }
 
     const match = await bcrypt.compare(password, findUser.password);
 
     if (!match) {
-      return res.status(401).send("password incorrect")
+      return res.status(400).json({message  : "password incorrect" , status : 0})
+
     }
 
     const payLoad = {
