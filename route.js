@@ -83,7 +83,9 @@ const create = async (req, res) => {
 
     // ----------- save the data -----------
 
-    await dataModel.insertMany({ userId : user.id, title, description });
+   const createNote =   new dataModel({ userId : user.id, title, description });
+
+   await createNote.save();
 
     res.send('Data Successfully Added');
 
