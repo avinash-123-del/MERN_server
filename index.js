@@ -19,10 +19,10 @@ app.post("/sign-up", signUp);
 app.post("/sign-in", signIn);
 
 // ------ CRUD -----
-app.post("/create",jwtAuthVerify ,  create);
-app.get("/read",jwtAuthVerify, read);
-app.post("/update",jwtAuthVerify, update);
-app.post("/delete",jwtAuthVerify, dlt)
+app.post("/create", jwtAuthVerify, create);
+app.post("/read", jwtAuthVerify, read);
+app.post("/update", jwtAuthVerify, update);
+app.post("/delete", jwtAuthVerify, dlt)
 
 
 app.listen(process.env.PORT, () => {

@@ -32,7 +32,7 @@ export const generateToken = (userData) => {
           const payload = typeof userData === 'string' ? { user: userData } : userData;
         
           return jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: "1h"
+            expiresIn: "1d"
           });
         };
         

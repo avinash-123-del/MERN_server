@@ -56,7 +56,7 @@ const signIn = async (req, res) => {
 
     const token = await generateToken(payLoad);
 
-    return res.status(201).json({ message: "user loggedIn successfully ", token })
+    return res.status(201).json({ message: "user loggedIn successfully ", token , userInfo : payLoad })
 
   } catch (err) {
     return res.status(501).send("Internal server error")
