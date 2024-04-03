@@ -40,7 +40,7 @@ const signIn = async (req, res) => {
     const findUser = await userModel.findOne({ email: email });
 
     if (!findUser) {
-      res.send("User not Found")
+      return res.status(401).send("user not found");
     }
 
     const match = await bcrypt.compare(password, findUser.password);
@@ -94,17 +94,17 @@ const create = async (req, res) => {
 const read = async (req, res) => {
   try {
 
-    const user = req.user;
+    const {userId} = req.body;
 
     //---------findUser -------------
 
-    const findUser = await userModel.findOne({ _id: user.id });
+       const findUser = await userModel.findById({_id : userId});
 
     if(!findUser){
       return res.status(401).send("user not found")
     }
 
-    const data = await dataModel.find({ userId : findUser });
+    const data = await dataModel.find({ userId}).sort({ createdAt: -1 }).lean();
 
     return res.status(201).json( data )
 

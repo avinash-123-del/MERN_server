@@ -1,35 +1,31 @@
 import mongoose from "mongoose";
-import dotenv from 'dotenv'
-
-let db, userSchema, userModel, dataSchema, dataModel;
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 mongoose.connect(process.env.MONGO_URL);
 
-db = mongoose.connection;
+const db = mongoose.connection;
 
-db.on("error", () => {
-  console.error.bind(console, "Connection Error");
-});
+db.on("error", console.error.bind(console, "Connection Error"));
 
 db.once('open', () => {
-  console.log("We are connected");
+  console.log("Connected to MongoDB");
 });
 
-userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String
-});
+}, { timestamps: true }); 
 
-dataSchema = new mongoose.Schema({
+const dataSchema = new mongoose.Schema({
   userId: mongoose.Schema.Types.ObjectId,
   title: String,
-  description: String,
-});
+  description: String
+}, { timestamps: true }); 
 
-userModel = mongoose.model("user", userSchema);
-dataModel = mongoose.model("data", dataSchema);
+const userModel = mongoose.model("User", userSchema); 
+const dataModel = mongoose.model("Data", dataSchema); 
 
-export { userModel,dataModel };
+export { userModel, dataModel };
